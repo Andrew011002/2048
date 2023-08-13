@@ -118,7 +118,7 @@ class Grid:
         if np.any(self.grid.astype(int) == 0): # if there's any open space the game is still in place
             return False
         if np.any(self.grid.astype(int) == 2048):
-            return True
+            return 2048
         # if any movement in all directions is the same as the original grid, the game is over
         return not self.move_horizontal() and not self.move_vertical()
         

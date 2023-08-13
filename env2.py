@@ -4,7 +4,6 @@ import gymnasium as gym
 from grid import Grid
 from gymnasium import spaces
 from stable_baselines3.common.env_checker import check_env
-from main import Game
 
 class Env2048(gym.Env):
 
@@ -30,8 +29,6 @@ class Env2048(gym.Env):
         self.grid = Grid(size=self.size)
         self.observation = self.reshape_and_normalize(self.grid)
         self.info = {"reward": 0, "done": False}
-        self.gui = Game(self, user=False, size=self.size)
-        # self.gui.start_game()
         return self.observation, self.info
     
     def move(self, direction):
@@ -50,17 +47,22 @@ class Env2048(gym.Env):
         reward = (score + moves) / 1000 * points
         return reward
     
-    def get_grid(self):
-        return self.grid.numpy().astype(self.dtype)
-    
     def game_over(self):
         return self.grid.game_over()
+
+    def numpy(self):
+        return self.grid.numpy()
+    
+    def score(self):
+        return self.grid.score
+    
+    def moves(self):
+        return self.grid.moves
     
     def render(self, mode="console"):
         if mode != "console":
             raise NotImplementedError("Mode not supported")
-        # print(self.grid)
-        self.gui.update()
+        print(self.grid)
         
 def simulate(env, episodes=100):
 
@@ -80,7 +82,6 @@ def simulate(env, episodes=100):
             print(f"Reward {reward}")
             print(f"Info: {info}")
             env.render()
-            time.sleep(1)
             net_reward += reward
 
         print(f"Net Reward: {net_reward}")
