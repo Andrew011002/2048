@@ -99,11 +99,9 @@ class Game(tk.Frame):
 
         self.game_over()
 
-        if self.user:
-            self.update_idletasks()
-        else:
-            if not self.paused:
-                self.master.after(500, self.update)
+        self.update_idletasks()
+        if not self.user:
+            self.master.after(250, self.update)
 
     def left(self, event):
 
@@ -133,18 +131,16 @@ class Game(tk.Frame):
         action = self.env.action_space.sample()
         obs, reward, done, truncated, info = self.env.step(action)
 
-    def disable(self):
-
-        self.master.unbind("p") 
-        self.paused = True
-
-    def enable(self):
-
-        self.master.bind("p", self.pause) 
-        self.paused = False
-        self.update()
-
     def pause(self, event):
+
+        self.paused = not self.paused
+
+        if self.paused:
+            self.setup_pause()
+        else:
+            self.resume()
+
+    def setup_pause(self):
 
         self.pause_frame = tk.Frame(self.main_grid, bg=style.GRID_COLOR, bd=3, width=400, height=400)
         self.pause_frame.place(anchor="center", relx=0.5, rely=0.3)
@@ -158,19 +154,16 @@ class Game(tk.Frame):
         self.quit_button.configure(text_color=style.CELL_NUMBER_COLORS[2], bg_color=style.EMPTY_CELL_COLOR, fg_color=style.CELL_COLORS[32], hover_color=style.CELL_COLORS[64])
         self.quit_button.place(anchor="center", relx=0.5, rely=0.75)
 
-        self.disable()
-
     def resume(self):
 
+        self.paused = False
         self.pause_frame.destroy()
         self.resume_button.destroy()
         self.quit_button.destroy()
-
-        self.enable()
+        self.update()
 
     def quit(self):
 
-        self.disable()
         self.master.destroy()
 
         if self.menu:
@@ -184,13 +177,13 @@ class Game(tk.Frame):
             game_over_frame = tk.Frame(self.main_grid, borderwidth=2)
             game_over_frame.place(relx=0.5, rely=0.5, anchor="center")
             tk.Label(game_over_frame, text="You Won", bg=style.WINNER_BG, fg=style.GAME_OVER_FONT_COLOR, font=style.GAME_OVER_FONT).pack()
-            self.disable() 
+            self.master.unbind("p")
             
         elif status_code:
             game_over_frame = tk.Frame(self.main_grid, borderwidth=2)
             game_over_frame.place(relx=0.5, rely=0.5, anchor="center")
             tk.Label(game_over_frame, text="You Lost!", bg=style.LOSER_BG, fg=style.GAME_OVER_FONT_COLOR, font=style.GAME_OVER_FONT).pack()
-            self.disable() 
+            self.master.unbind("p")
 
     def setup_grid(self):
 
@@ -208,7 +201,7 @@ class Game(tk.Frame):
             self.master.bind("w", self.up)
             self.master.bind("s", self.down) 
         else:
-            self.master.after(3000, self.update)
+            self.master.after(1000, self.update)
 
 class Menu(tk.Tk):
 
@@ -247,5 +240,5 @@ class Menu(tk.Tk):
         Game(user=False, size=4, menu=True)
 
 if __name__ == "__main__":
-    Game(user=False, size=4)
+    Game(user=False, size=4, menu=True)
 
