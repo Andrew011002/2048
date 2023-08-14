@@ -1,16 +1,13 @@
+import os
+import sys
+import style
+import numpy as np
 import tkinter as tk
 import customtkinter as ctk
 from PIL import ImageTk, Image
-import numpy as np
 from env2 import Env2048
-import stable_baselines3 as sb3
-import style
-import sys
-import os
 
 path = os.path.abspath(os.path.dirname(__file__))
-timestep = 2940
-# model = sb3.PPO.load(f"Agents/Agent-{timestep}")
 
 class Game(tk.Frame):
 
@@ -61,7 +58,7 @@ class Game(tk.Frame):
         self.move_label.grid(row=0, column=1)
 
     def start_game(self):
-
+        
         self.env = Env2048(self.size)
         self.obs = self.env.reset()
 
@@ -78,11 +75,14 @@ class Game(tk.Frame):
             return None
         
         if not self.user:
+
             self.run_model()
+
+        grid = self.env.numpy()
 
         for i in range(self.size):
             for j in range(self.size):
-                cell_val = int(self.env.numpy()[i][j])
+                cell_val = int(grid[i][j])
 
                 if not cell_val:
 
@@ -239,6 +239,8 @@ class Menu(tk.Tk):
         self.destroy()
         Game(user=False, size=4, menu=True)
 
-if __name__ == "__main__":
-    Game(user=False, size=4, menu=True)
+def main():
+    menu = Menu()
 
+if __name__ == "__main__":
+    main()

@@ -1,4 +1,3 @@
-import time
 import numpy as np
 import gymnasium as gym
 from gymnasium import spaces
@@ -14,6 +13,7 @@ class Env2048(gym.Env):
         self.eps = eps
         self.action_space = spaces.Discrete(4)
         self.observation_space = spaces.Box(low=0, high=1, shape=(size * size,), dtype=dtype)
+        self.gui = None
 
     def step(self, action):
         mappings = {0: "left", 1: "right", 2: "up", 3: "down"}
