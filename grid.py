@@ -3,7 +3,7 @@ import numpy as np
 class Grid:
 
     def __init__(self, size=4):
-        self.grid = np.zeros((size, size), dtype=int)
+        self.grid = np.zeros((size, size))
         self.size = size
         self.score = 0
         self.moves = 0
@@ -132,7 +132,7 @@ class Grid:
         return self.grid
         
     def __str__(self):
-        return str(self.grid)
+        return str(self.grid.astype(int))
 
 def main():
     grid = Grid()

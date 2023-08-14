@@ -1,8 +1,8 @@
 import time
 import numpy as np
 import gymnasium as gym
-from grid import Grid
 from gymnasium import spaces
+from grid import Grid
 from stable_baselines3.common.env_checker import check_env
 
 class Env2048(gym.Env):
@@ -69,8 +69,8 @@ def simulate(env, episodes=100):
     for _ in range(episodes):
 
         net_reward = 0
-        done = False # reset done every loop
-        obs = env.reset() # reset env
+        done = False 
+        obs = env.reset() 
         env.render()
 
         while not done:
@@ -81,6 +81,7 @@ def simulate(env, episodes=100):
             print(f"Action: {'left' if not action else 'right' if action == 1 else 'up' if action == 2 else 'down'}")
             print(f"Reward {reward}")
             print(f"Info: {info}")
+            print("Resultant Grid:")
             env.render()
             net_reward += reward
 
@@ -89,9 +90,9 @@ def simulate(env, episodes=100):
 def main():
 
     np.set_printoptions(linewidth=100)
-    env = Env2048(dtype=np.float16) # create evniornment
+    env = Env2048(dtype=np.float16) 
 
-    check_env(env) # make sure it passes check
+    check_env(env) 
     simulate(env, episodes=1)
 
 if __name__ == "__main__":
