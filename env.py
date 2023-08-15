@@ -4,7 +4,6 @@ import gymnasium as gym
 from gymnasium import spaces
 from grid import Grid
 from stable_baselines3.common.env_checker import check_env
-from threading import Thread
 
 class Env2048(gym.Env):
 
@@ -81,6 +80,8 @@ class Env2048(gym.Env):
         
 def simulate(env, episodes=100, store_result=False, verbose=True):
 
+    results = []
+
     for _ in range(episodes):
 
         net_reward = 0
@@ -108,25 +109,11 @@ def simulate(env, episodes=100, store_result=False, verbose=True):
             print(f"Net Reward: {net_reward}")    
 
         if store_result:
-            dirname = os.path.dirname(__file__)
             max_tile = np.max(env.numpy())
-            os.makedirs(f"{dirname}/game_data", exist_ok=True)
-            path = os.path.join(dirname, f"{'game_data'}/data.txt")
-            with open(path, mode="a", encoding="utf-8") as file:
-                file.write(f"Max Tile: {int(max_tile)} Info: {info} Net Reward: {net_reward}\n")
-
-def run_simulations(workers=10, episodes=100):
-
-    threads = []
-
-    for _ in range(workers):
-        env = Env2048()
-        thread = Thread(target=simulate, args=(env, episodes, True, False))
-        thread.start()
-        threads.append(thread)
-
-    for thread in threads:
-        thread.join()
+            score, moves, points = env.score(), env.moves(), env.points()
+            results.append([max_tile, score, moves, points, net_reward])
+        
+    return results
 
 def main():
 
@@ -134,9 +121,8 @@ def main():
     env = Env2048(dtype=np.float16) 
 
     check_env(env) 
-    # simulate(env, episodes=1000, store_result=True)
-
-    run_simulations(workers=10, episodes=100)
+    results = simulate(env, episodes=1, store_result=True)
+    print(results)
 
 if __name__ == "__main__":
     main()
