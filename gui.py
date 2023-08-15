@@ -5,7 +5,7 @@ import numpy as np
 import tkinter as tk
 import customtkinter as ctk
 from PIL import ImageTk, Image
-from env2 import Env2048
+from env import Env2048
 
 path = os.path.abspath(os.path.dirname(__file__))
 

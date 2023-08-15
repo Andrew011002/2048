@@ -1,7 +1,8 @@
 import torch
 import os
+import numpy as np
 import stable_baselines3 as sb3
-from env2 import Env2048
+from env import Env2048
 from argparse import ArgumentParser
 
 def train(model, timesteps=10000, iters=100,  save_path=None, log_name=None, log_interval=1):
@@ -39,9 +40,11 @@ def simulate(model, env, episodes=1, verbose=False):
             if verbose:
                 print(f"{'-' * 20}\nResults\n{'-' * 20}")
                 env.render() 
-                print(f"Oberservation: {list(observation)}\nAction: {action}\nReward: {reward}\nInfo: {info}") 
+                print(f"Oberservation: {observation}\nAction: {action}\nReward: {reward}\nInfo: {info}") 
 
 def main():
+
+    np.set_printoptions(precision=3)
 
     parser = ArgumentParser(description="Determine whether to train, retrain, or simulate a model")
     parser.add_argument("--path", type=str, help="Path for models (saving or loading).", default="models/model")
