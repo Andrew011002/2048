@@ -61,6 +61,7 @@ class Grid:
         
         score, moves = self.score, self.moves
         points, moved = score - prev_score, moves > prev_moves
+        self.points = points
         return score, moves, points, moved
 
     def move_left(self, grid):
