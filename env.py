@@ -1,8 +1,11 @@
 import os
 import numpy as np
 import gymnasium as gym
+import time
 from gymnasium import spaces
 from grid import Grid
+from multiprocessing import Pool
+from threading import Thread
 from stable_baselines3.common.env_checker import check_env
 
 class Env2048(gym.Env):
@@ -77,11 +80,29 @@ class Env2048(gym.Env):
         if mode != "console":
             raise NotImplementedError("Mode not supported")
         print(self.grid)
-        
+
+def run_simulations(num_processes, episodes_per_process):
+
+    with Pool(num_processes) as pool:
+        processed_results = pool.map(wrapper, [episodes_per_process for _ in range(num_processes)])
+        aggregated_results = aggregate_results(processed_results)
+        return aggregated_results
+    
+def wrapper(episodes):
+    results = simulate(Env2048(), episodes, store_result=True, verbose=False)
+    return results
+
+def aggregate_results(processed_results):
+    aggregated_results = []
+    for processed_result in processed_results:
+
+        for results in processed_result:
+            aggregated_results.append(results)
+
+    return aggregated_results
+
 def simulate(env, episodes=100, store_result=False, verbose=True):
-
     results = []
-
     for _ in range(episodes):
 
         net_reward = 0
@@ -112,17 +133,41 @@ def simulate(env, episodes=100, store_result=False, verbose=True):
             max_tile = np.max(env.numpy())
             score, moves, points = env.score(), env.moves(), env.points()
             results.append([max_tile, score, moves, points, net_reward])
-        
+    
     return results
+
+def write_results(results, path=None):
+
+    threads = []
+
+    if path is None:
+        dirname = os.path.dirname(__file__)
+        path = os.path.join(dirname, "data" + "/" + "stats.csv")
+
+    create_path(path)
+    with open(path, mode="a", encoding="utf-8") as file:
+        for result in results:
+            if not isinstance(result, list):
+                result = list(result)
+            
+            csv_data = ", ".join(map(str, result)) + "\n"
+
+            thread = Thread(target=file.write, args=(csv_data,))
+            thread.start()
+            threads.append(thread)
+
+    for thread in threads:
+        thread.join()
+
+def create_path(path):
+    dirname = os.path.dirname(path)
+    os.makedirs(dirname, exist_ok=True)
 
 def main():
 
     np.set_printoptions(linewidth=100)
     env = Env2048(dtype=np.float16) 
-
     check_env(env) 
-    results = simulate(env, episodes=1, store_result=True)
-    print(results)
 
 if __name__ == "__main__":
     main()
