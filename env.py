@@ -1,7 +1,6 @@
 import os
 import numpy as np
 import gymnasium as gym
-import time
 from gymnasium import spaces
 from grid import Grid
 from multiprocessing import Pool
@@ -51,8 +50,9 @@ class Env2048(gym.Env):
             return -1
 
         scale = 1 / (1 + np.exp(-points / 1024))
-        shift = 1 / (1 + moves)
-        base = self.normalize_scalar(score, 0, 25000)
+        shift = (moves + 1) / 10e4
+        base = self.normalize_scalar(score, 0, 20000)
+        print(f"base: {base}, scale: {scale}, shift: {shift}")
         reward = base * scale + shift
         return reward
     
@@ -82,13 +82,9 @@ class Env2048(gym.Env):
 
 def run_simulations(num_processes, episodes_per_process):
     with Pool(num_processes) as pool:
-        processed_results = pool.map(wrapper, [episodes_per_process for _ in range(num_processes)])
+        processed_results = pool.map(simulate_wrapper, [episodes_per_process for _ in range(num_processes)])
         aggregated_results = aggregate_results(processed_results)
         return aggregated_results
-    
-def wrapper(episodes):
-    results = simulate(Env2048(), episodes, store_result=True, verbose=False)
-    return results
 
 def aggregate_results(processed_results):
     aggregated_results = []
@@ -96,6 +92,10 @@ def aggregate_results(processed_results):
         for results in processed_result:
             aggregated_results.append(results)
     return aggregated_results
+
+def simulate_wrapper(episodes):
+    results = simulate(Env2048(), episodes, store_result=True, verbose=False)
+    return results
 
 def simulate(env, episodes=100, store_result=False, verbose=True):
     results = []
@@ -120,37 +120,11 @@ def simulate(env, episodes=100, store_result=False, verbose=True):
 
         if verbose:
             print(f"Net Reward: {net_reward}")    
-
         if store_result:
             max_tile = np.max(env.numpy())
             score, moves, points = env.score(), env.moves(), env.points()
-            results.append([max_tile, score, moves, points, round(net_reward, 3)])
+            results.append([max_tile, score, moves, round(net_reward, 3)])
     return results
-
-def write_results(results, path=None):
-    threads = []
-    if path is None:
-        dirname = os.path.dirname(__file__)
-        path = os.path.join(dirname, "data" + "/" + "stats.csv")
-
-    create_path(path)
-    with open(path, mode="a", encoding="utf-8") as file:
-        for result in results:
-            if not isinstance(result, list):
-                result = list(result)
-            
-            csv_data = ", ".join(map(str, result)) + "\n"
-
-            thread = Thread(target=file.write, args=(csv_data,))
-            thread.start()
-            threads.append(thread)
-
-    for thread in threads:
-        thread.join()
-
-def create_path(path):
-    dirname = os.path.dirname(path)
-    os.makedirs(dirname, exist_ok=True)
 
 def main():
     np.set_printoptions(linewidth=100)

@@ -10,13 +10,10 @@ class Grid:
         self.populate(n_tiles=2)
 
     def shift(self, grid):
-
         new_grid = np.zeros((self.size, self.size)) 
-        
         for i, row in enumerate(grid): 
             fill = self.size - 1
             for tile in row: 
-                
                 if tile: 
                     new_grid[i][fill] = tile 
                     fill -= 1
@@ -25,11 +22,11 @@ class Grid:
     def combine(self, grid):
         for i in range(self.size): 
             for j in range(self.size - 1): 
-                score = self.handle(grid, i, j)
+                score = self.handle_tiles(grid, i, j)
                 self.score += score
         return grid
     
-    def handle(self, grid, i, j):
+    def handle_tiles(self, grid, i, j):
         score = 0
         if grid[i][j] == grid[i][j + 1] and grid[i][j]: 
             grid[i][j] *= 2
@@ -38,22 +35,18 @@ class Grid:
         return score
         
     def move(self, direction):
-
-        temp = self.grid
+        temp = self.grid.copy()
         prev_score, prev_moves = self.score, self.moves
 
         if direction == 'left':
             temp = self.move_left(temp)
-        
         elif direction == 'right':
             temp = self.move_right(temp)
-
         elif direction == 'up':
             temp = self.move_up(temp)
-        
         elif direction == 'down':
             temp = self.move_down(temp)
-        
+
         if not np.array_equal(temp, self.grid):
             self.grid = temp
             self.moves += 1
@@ -118,11 +111,9 @@ class Grid:
         return not self.move_horizontal() and not self.move_vertical()
         
     def populate(self, n_tiles=1):
-
         for _ in range(n_tiles):
             row, col = np.where(self.grid == 0) 
             index = np.random.randint(0, len(row))
-
             if n_tiles == 2:
                 tile = 2
             else:
@@ -134,23 +125,3 @@ class Grid:
         
     def __str__(self):
         return str(self.grid.astype(int))
-
-def main():
-    grid = Grid()
-    print(grid)
-    print()
-    score, moves, points, moved = grid.move("left")
-    print(grid)
-    print(f"score: {score}, moves: {moves}, points: {points}, moved: {moved}")
-    score, moves, points, moved = grid.move("right")
-    print(grid)
-    print(f"score: {score}, moves: {moves}, points: {points}, moved: {moved}")
-    score, moves, points, moved = grid.move("up")
-    print(grid)
-    print(f"score: {score}, moves: {moves}, points: {points}, moved: {moved}")
-    score, moves, points, moved = grid.move("down")
-    print(grid)
-    print(f"score: {score}, moves: {moves}, points: {points}, moved: {moved}")
-
-if __name__ == "__main__":
-    main()
