@@ -50,10 +50,9 @@ class Env2048(gym.Env):
         if not moved:
             return -1
 
-        scale = 1/ (1 + np.exp(-points / 1024))
+        scale = 1 / (1 + np.exp(-points / 1024))
         shift = 1 / (1 + moves)
         base = self.normalize_scalar(score, 0, 25000)
-
         reward = base * scale + shift
         return reward
     
@@ -82,7 +81,6 @@ class Env2048(gym.Env):
         print(self.grid)
 
 def run_simulations(num_processes, episodes_per_process):
-
     with Pool(num_processes) as pool:
         processed_results = pool.map(wrapper, [episodes_per_process for _ in range(num_processes)])
         aggregated_results = aggregate_results(processed_results)
@@ -95,29 +93,23 @@ def wrapper(episodes):
 def aggregate_results(processed_results):
     aggregated_results = []
     for processed_result in processed_results:
-
         for results in processed_result:
             aggregated_results.append(results)
-
     return aggregated_results
 
 def simulate(env, episodes=100, store_result=False, verbose=True):
     results = []
     for _ in range(episodes):
-
         net_reward = 0
         done = False 
         obs = env.reset() 
-
         if verbose:
             env.render()
 
         while not done:
-
             action = env.action_space.sample()
             obs, reward, done, truncated, info = env.step(action)
             net_reward += reward
-
             if verbose:
                 print(f"Observation: {list(obs)}")
                 print(f"Action: {'left' if not action else 'right' if action == 1 else 'up' if action == 2 else 'down'}")
@@ -132,14 +124,11 @@ def simulate(env, episodes=100, store_result=False, verbose=True):
         if store_result:
             max_tile = np.max(env.numpy())
             score, moves, points = env.score(), env.moves(), env.points()
-            results.append([max_tile, score, moves, points, net_reward])
-    
+            results.append([max_tile, score, moves, points, round(net_reward, 3)])
     return results
 
 def write_results(results, path=None):
-
     threads = []
-
     if path is None:
         dirname = os.path.dirname(__file__)
         path = os.path.join(dirname, "data" + "/" + "stats.csv")
@@ -164,10 +153,10 @@ def create_path(path):
     os.makedirs(dirname, exist_ok=True)
 
 def main():
-
     np.set_printoptions(linewidth=100)
     env = Env2048(dtype=np.float16) 
     check_env(env) 
+    simulate(env, episodes=1)
 
 if __name__ == "__main__":
     main()
